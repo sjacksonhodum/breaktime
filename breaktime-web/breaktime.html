@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>breaktime</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center">
+  <div class="w-full max-w-3xl px-2 py-8">
+    <h1 class="text-4xl font-bold text-center mb-8">breaktime</h1>
+    <div id="widgets" class="flex flex-col md:flex-row gap-4 justify-center mb-8"></div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center">
+        <div class="text-lg font-semibold mb-2">time before the break</div>
+        <div class="flex items-end gap-6 mb-2">
+          <div class="flex flex-col items-center"><span id="before-years" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">years</span></div>
+          <div class="flex flex-col items-center"><span id="before-months" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">months</span></div>
+          <div class="flex flex-col items-center"><span id="before-days" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">days</span></div>
+        </div>
+        <div class="text-blue-600 font-semibold">total days: <span id="before-total"></span></div>
+        <div class="text-xs text-gray-400 mt-1" id="before-range"></div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center">
+        <div class="text-lg font-semibold mb-2">time after the break</div>
+        <div class="flex items-end gap-6 mb-2">
+          <div class="flex flex-col items-center"><span id="after-years" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">years</span></div>
+          <div class="flex flex-col items-center"><span id="after-months" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">months</span></div>
+          <div class="flex flex-col items-center"><span id="after-days" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">days</span></div>
+        </div>
+        <div class="text-blue-600 font-semibold">total days: <span id="after-total"></span></div>
+        <div class="text-xs text-gray-400 mt-1" id="after-range"></div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center">
+        <div class="text-lg font-semibold mb-2">total time (before + after)</div>
+        <div class="flex items-end gap-6 mb-2">
+          <div class="flex flex-col items-center"><span id="total-years" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">years</span></div>
+          <div class="flex flex-col items-center"><span id="total-months" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">months</span></div>
+          <div class="flex flex-col items-center"><span id="total-days" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">days</span></div>
+        </div>
+        <div class="text-blue-600 font-semibold">total days: <span id="total-total"></span></div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center">
+        <div class="text-lg font-semibold mb-2">no break (continuous)</div>
+        <div class="flex items-end gap-6 mb-2">
+          <div class="flex flex-col items-center"><span id="nobreak-years" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">years</span></div>
+          <div class="flex flex-col items-center"><span id="nobreak-months" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">months</span></div>
+          <div class="flex flex-col items-center"><span id="nobreak-days" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">days</span></div>
+        </div>
+        <div class="text-blue-600 font-semibold">total days: <span id="nobreak-total"></span></div>
+        <div class="text-xs text-gray-400 mt-1" id="nobreak-range"></div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center">
+        <div class="text-lg font-semibold mb-2">break duration</div>
+        <div class="flex items-end gap-6 mb-2">
+          <div class="flex flex-col items-center"><span id="break-years" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">years</span></div>
+          <div class="flex flex-col items-center"><span id="break-months" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">months</span></div>
+          <div class="flex flex-col items-center"><span id="break-days" class="text-3xl font-mono"></span><span class="text-sm text-gray-500">days</span></div>
+        </div>
+        <div class="text-blue-600 font-semibold">total days: <span id="break-total"></span></div>
+        <div class="text-xs text-gray-400 mt-1" id="break-range"></div>
+      </div>
+    </div>
+    <footer class="mt-10 text-center text-xs text-gray-400">
+      <div>made by sam jh</div>
+      <div>M+S</div>
+    </footer>
+  </div>
+  <script>
+    // --- Date Constants ---
+    const beforeStart = new Date(2024, 7, 1); // August 1, 2024
+    const beforeEnd = new Date(2025, 0, 17); // January 17, 2025
+    const afterStart = new Date(2025, 3, 15); // April 15, 2025
+    const now = new Date();
+
+    // --- Date Helpers ---
+    function getDateComponents(start, end) {
+      let years = end.getFullYear() - start.getFullYear();
+      let months = end.getMonth() - start.getMonth();
+      let days = end.getDate() - start.getDate();
+      if (days < 0) {
+        months--;
+        const prevMonth = new Date(end.getFullYear(), end.getMonth(), 0);
+        days += prevMonth.getDate();
+      }
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+      return { years, months, days };
+    }
+    function getTotalDays(start, end) {
+      const msPerDay = 1000 * 60 * 60 * 24;
+      return Math.floor((end - start) / msPerDay);
+    }
+    function addDateComponents(a, b) {
+      let years = a.years + b.years;
+      let months = a.months + b.months;
+      let days = a.days + b.days;
+      if (days >= 30) {
+        months += Math.floor(days / 30);
+        days = days % 30;
+      }
+      if (months >= 12) {
+        years += Math.floor(months / 12);
+        months = months % 12;
+      }
+      return { years, months, days };
+    }
+    function formatRange(start, end) {
+      return `from ${start.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })} - ${end.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}`;
+    }
+
+    // --- Periods ---
+    const before = getDateComponents(beforeStart, beforeEnd);
+    const after = getDateComponents(afterStart, now);
+    const total = addDateComponents(before, after);
+    const noBreak = getDateComponents(beforeStart, now);
+    const breakDuration = getDateComponents(beforeEnd, afterStart);
+
+    // --- Total Days ---
+    const beforeDays = getTotalDays(beforeStart, beforeEnd);
+    const afterDays = getTotalDays(afterStart, now);
+    const totalDays = beforeDays + afterDays;
+    const noBreakDays = getTotalDays(beforeStart, now);
+    const breakDurationDays = getTotalDays(beforeEnd, afterStart);
+
+    // --- Render ---
+    document.getElementById('before-years').textContent = before.years;
+    document.getElementById('before-months').textContent = before.months;
+    document.getElementById('before-days').textContent = before.days;
+    document.getElementById('before-total').textContent = beforeDays;
+    document.getElementById('before-range').textContent = formatRange(beforeStart, beforeEnd);
+
+    document.getElementById('after-years').textContent = after.years;
+    document.getElementById('after-months').textContent = after.months;
+    document.getElementById('after-days').textContent = after.days;
+    document.getElementById('after-total').textContent = afterDays;
+    document.getElementById('after-range').textContent = formatRange(afterStart, now);
+
+    document.getElementById('total-years').textContent = total.years;
+    document.getElementById('total-months').textContent = total.months;
+    document.getElementById('total-days').textContent = total.days;
+    document.getElementById('total-total').textContent = totalDays;
+
+    document.getElementById('nobreak-years').textContent = noBreak.years;
+    document.getElementById('nobreak-months').textContent = noBreak.months;
+    document.getElementById('nobreak-days').textContent = noBreak.days;
+    document.getElementById('nobreak-total').textContent = noBreakDays;
+    document.getElementById('nobreak-range').textContent = formatRange(beforeStart, now);
+
+    document.getElementById('break-years').textContent = breakDuration.years;
+    document.getElementById('break-months').textContent = breakDuration.months;
+    document.getElementById('break-days').textContent = breakDuration.days;
+    document.getElementById('break-total').textContent = breakDurationDays;
+    document.getElementById('break-range').textContent = formatRange(beforeEnd, afterStart);
+
+    // --- Widget: months/days until each hits a year ---
+    function monthsDaysUntilYear(period) {
+      if (period.years >= 1) return { months: 0, days: 0 };
+      return { months: 11 - period.months, days: 29 - period.days };
+    }
+    const withBreakUntilYear = monthsDaysUntilYear(addDateComponents(before, after));
+    const noBreakUntilYear = monthsDaysUntilYear(noBreak);
+    function widgetHtml(label, months, days) {
+      return `<div class='flex flex-col items-center bg-blue-50 border border-blue-200 rounded-lg px-4 py-2'><div class='text-xs text-blue-700 mb-1'>until <span class='font-semibold'>${label}</span> hits 1 year</div><div class='flex gap-2 text-blue-900 font-mono text-lg'><span>${months}m</span><span>${days}d</span></div></div>`;
+    }
+    document.getElementById('widgets').innerHTML =
+      widgetHtml('with break', withBreakUntilYear.months, withBreakUntilYear.days) +
+      widgetHtml('no break', noBreakUntilYear.months, noBreakUntilYear.days);
+  </script>
+</body>
+</html> 
